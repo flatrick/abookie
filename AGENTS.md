@@ -6,10 +6,11 @@ This file guides AI coding agents (Claude Code and others) working in this repos
 
 abookie is an audiobook player. Linux is the MVP target. macOS and Windows must stay possible, but no effort goes into them before the Linux MVP. The project's own code is released under The Unlicense.
 
-The toolchain, layering and test suite exist; there are no user-facing features yet. The stack and architecture are **decided and planned** in OpenSpec changes. Read them before implementing anything:
+The toolchain, layering and test suite exist; there are no user-facing features yet. Read the specs and planned changes before implementing anything:
 
-- `openspec/changes/project-foundation/`: toolchain, dependencies, layering, testing approach.
-- `openspec/changes/library-model/`: library roots, structures, scanning, book identity, listening state.
+- `openspec/specs/{core,platform,ui}/spec.md`: the cross-cutting rules for each layer (from the archived `project-foundation` change).
+- `openspec/changes/archive/2026-11-01-project-foundation/design.md`: why the stack, layering and testing approach were chosen.
+- `openspec/changes/library-model/`: planned next. Library roots, structures, scanning, book identity, listening state.
 
 Once a change is archived, `openspec/specs/` is the source of truth for its requirements. Do not invent build/test commands; use the ones under [Commands](#commands).
 
@@ -21,7 +22,7 @@ The code is split into three layers. Tests enforce the boundaries between them:
 - `platform`: adapters implementing core ports (playback engine, tags, storage, filesystem, OS integration). The only place OS-specific code may live.
 - `ui`: views and view-models. Views hold no business logic and never call platform adapters directly.
 
-Rationale and details are in `openspec/changes/project-foundation/design.md`.
+Rationale and details are in `openspec/changes/archive/2026-11-01-project-foundation/design.md`.
 
 ## Commands
 
@@ -61,6 +62,7 @@ Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) usin
 - The project commands live in `.claude/commands/opsx/`: `/opsx:propose`, `/opsx:new`, `/opsx:continue`, `/opsx:apply`, `/opsx:verify`, `/opsx:archive`, `/opsx:explore`, `/opsx:sync`, `/opsx:update`, `/opsx:onboard`.
 - Propose/new/continue are planning only. They never edit project code, and implementation starts only through `/opsx:apply` on a later request.
 - **Commit the plan before any code.** A change's artifacts (proposal, design, specs, tasks) must be committed before its first code change. If `tasks.md` was not part of that commit, it gets a commit of its own. Never run `/opsx:apply` on a change unless git history has at least one commit containing its full set of artifacts, including `tasks.md`, and the change folder has no uncommitted edits.
+- **Archiving is a single commit.** `openspec archive "<name>"` (without `--yes`) moves the change to `openspec/changes/archive/` and writes the canonical specs. Commit that move, the spec updates and any follow-up edits the archive requires (such as `AGENTS.md` pointers) together in one commit.
 - Validate with `openspec validate --all`, or `openspec validate --type change <name>` for a single change.
 - Project-wide constraints and per-artifact rules (including the TDD rule for `tasks.md` and the spec layout) live in the `context:` / `rules:` sections of `openspec/config.yaml`. Follow them when writing artifacts.
 
