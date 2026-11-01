@@ -49,3 +49,10 @@ rules:
     - Every implementation task follows Red-Green-Refactor - write the failing test first, then
       the minimal implementation that passes it, then refactor with tests green
     - Each task names the failing test(s) it starts from
+
+operations:
+  apply:
+    guidance:
+      - Before applying, verify the change's full artifact set (proposal, design, specs, tasks.md) is
+        committed to git and the change folder has no uncommitted edits; if not, stop and ask for the
+        planning commit first (tasks.md gets its own commit if it was not committed with the others)

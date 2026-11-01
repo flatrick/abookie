@@ -38,6 +38,7 @@ Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) usin
 - Specs are nested under three top-level areas that mirror the code layers: `core/`, `ui/`, `platform/` (e.g. `specs/core/library/identity/spec.md`). An area's own `spec.md` (e.g. `specs/core/spec.md`) holds only cross-cutting requirements that apply to everything beneath it.
 - The project commands live in `.claude/commands/opsx/`: `/opsx:propose`, `/opsx:new`, `/opsx:continue`, `/opsx:apply`, `/opsx:verify`, `/opsx:archive`, `/opsx:explore`, `/opsx:sync`, `/opsx:update`, `/opsx:onboard`.
 - Propose/new/continue are planning only. They never edit project code, and implementation starts only through `/opsx:apply` on a later request.
+- **Commit the plan before any code.** A change's artifacts (proposal, design, specs, tasks) must be committed before its first code change. If `tasks.md` was not part of that commit, it gets a commit of its own. Never run `/opsx:apply` on a change unless git history has at least one commit containing its full set of artifacts, including `tasks.md`, and the change folder has no uncommitted edits.
 - Validate with `openspec validate --all`, or `openspec validate --type change <name>` for a single change.
 - Project-wide constraints and per-artifact rules (including the TDD rule for `tasks.md` and the spec layout) live in the `context:` / `rules:` sections of `openspec/config.yaml`. Follow them when writing artifacts.
 
