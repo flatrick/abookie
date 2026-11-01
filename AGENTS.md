@@ -6,12 +6,12 @@ This file guides AI coding agents (Claude Code and others) working in this repos
 
 abookie is an audiobook player. Linux is the MVP target. macOS and Windows must stay possible, but no effort goes into them before the Linux MVP. The project's own code is released under The Unlicense.
 
-There is no application code, build system, or test suite yet. The stack and architecture are **decided and planned** in OpenSpec changes. Read them before implementing anything:
+The toolchain, layering and test suite exist; there are no user-facing features yet. The stack and architecture are **decided and planned** in OpenSpec changes. Read them before implementing anything:
 
 - `openspec/changes/project-foundation/`: toolchain, dependencies, layering, testing approach.
 - `openspec/changes/library-model/`: library roots, structures, scanning, book identity, listening state.
 
-Once a change is archived, `openspec/specs/` is the source of truth for its requirements. Do not invent build/test commands. Applying `project-foundation` adds them here.
+Once a change is archived, `openspec/specs/` is the source of truth for its requirements. Do not invent build/test commands; use the ones under [Commands](#commands).
 
 ## Architecture
 
@@ -22,6 +22,28 @@ The code is split into three layers. Tests enforce the boundaries between them:
 - `ui`: views and view-models. Views hold no business logic and never call platform adapters directly.
 
 Rationale and details are in `openspec/changes/project-foundation/design.md`.
+
+## Commands
+
+Python >= 3.12, managed with [uv](https://docs.astral.sh/uv/). libmpv is a system dependency (see `README.md`).
+
+| Command | What it does |
+|---------|--------------|
+| `uv sync` | Create/update `.venv` from `uv.lock`, including the `dev` tools. |
+| `uv run pytest` | Run all tests (markers `unit`, `integration`, `ui`, `tooling`) with coverage; fails below 80%. |
+| `uv run pytest -m unit` | Run one marker only (`--no-cov` skips the coverage floor for partial runs). |
+| `uv run ruff check --fix .` | Lint and apply safe fixes. |
+| `uv run ruff format .` | Format the code. |
+| `uv run pyright` | Type-check (strict for `src/abookie/core`, basic elsewhere). |
+| `uv run lint-imports` | Check the layer contracts (also run by `tests/architecture/test_layers.py`). |
+| `uv run abookie` | Start the application. |
+| `tests/fixtures/make_fixtures.sh` | Regenerate the committed audio fixtures (needs ffmpeg). |
+
+Git hooks (enabled per clone with `gir init`; each skips with a warning when its tool is missing):
+
+- `pre-commit`: runs `ruff check --fix` and `ruff format` on staged `*.py` files. If anything changed, the commit is aborted and the files to re-stage are listed.
+- `commit-msg`: gir checks the message against Conventional Commits.
+- `pre-push`: `.githooks/check-all.sh` runs `ruff check`, `ruff format --check`, `pyright` and `pytest` (with coverage), then gir checks the pushed commits. Any failure blocks the push. Run `.githooks/check-all.sh` directly to get the same checks before pushing.
 
 ## Development rules
 
