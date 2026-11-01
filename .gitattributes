@@ -21,3 +21,9 @@
 *.dll binary
 *.so binary
 *.dylib binary
+*.mp3 binary
+*.opus binary
+*.ogg binary
+*.m4a binary
+*.m4b binary
+*.flac binary
