@@ -56,3 +56,8 @@ operations:
       - Before applying, verify the change's full artifact set (proposal, design, specs, tasks.md) is
         committed to git and the change folder has no uncommitted edits; if not, stop and ask for the
         planning commit first (tasks.md gets its own commit if it was not committed with the others)
+      - Do all apply work in a git worktree on its own branch, never in the main clone. Create it from
+        the commit that holds the planning artifacts with
+        `git worktree add .worktrees/<change-name> -b change/<change-name>`, then run `uv sync` inside
+        it and make every edit, test run and commit there. If the worktree already exists, continue in
+        it. This lets several changes be applied on the same machine at once.

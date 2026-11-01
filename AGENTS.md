@@ -63,6 +63,12 @@ Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) usin
 - Propose/new/continue are planning only. They never edit project code, and implementation starts only through `/opsx:apply` on a later request.
 - **Commit the plan before any code.** A change's artifacts (proposal, design, specs, tasks) must be committed before its first code change. If `tasks.md` was not part of that commit, it gets a commit of its own. Never run `/opsx:apply` on a change unless git history has at least one commit containing its full set of artifacts, including `tasks.md`, and the change folder has no uncommitted edits.
 - **Archiving is a single commit.** `openspec archive "<name>"` (without `--yes`) moves the change to `openspec/changes/archive/` and writes the canonical specs. Commit that move, the spec updates and any follow-up edits the archive requires (such as `AGENTS.md` pointers) together in one commit.
+- **Apply in a worktree on its own branch.** `/opsx:apply` work never happens in the main clone. Each change gets a git worktree under `.worktrees/` (gitignored) on a branch named `change/<change-name>`, so several changes can be in progress on one machine:
+  ```sh
+  git worktree add .worktrees/<change-name> -b change/<change-name>   # from the commit holding the plan
+  cd .worktrees/<change-name> && uv sync                              # each worktree has its own .venv
+  ```
+  All edits, test runs and commits for the change happen inside that worktree. If it already exists, continue there. The git hooks work in every worktree, because `core.hooksPath` is shared repository config.
 - Validate with `openspec validate --all`, or `openspec validate --type change <name>` for a single change.
 - Project-wide constraints and per-artifact rules (including the TDD rule for `tasks.md` and the spec layout) live in the `context:` / `rules:` sections of `openspec/config.yaml`. Follow them when writing artifacts.
 
