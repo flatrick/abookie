@@ -58,10 +58,10 @@ The repository has scaffolding only: git hooks (gir), OpenSpec, editor and line-
 - **platformdirs**: per-OS config, data and cache directories.
 
 ### Tooling
-- **uv**: environment, lockfile (`uv.lock`), Python version pin. Build backend: `uv_build` (or hatchling if it falls short).
+- **uv**: environment, lockfile (`uv.lock`), Python version pin (`.python-version`). Build backend: `uv_build`.
 - **ruff**: lint and format, configured in `pyproject.toml`, following `.editorconfig` (4 spaces).
-- **pyright**: type checking in strict mode for `core`, basic mode elsewhere.
-- **Python >= 3.12**: covers current distros. The developer runs 3.14.
+- **pyright**: type checking in strict mode for all production code (`src`), basic mode for `tests`. It checks against Python 3.12, the oldest supported version.
+- **Python >= 3.12**: covers current distros. Development uses 3.14, pinned in `.python-version`.
 
 ### Testing approach (TDD is mandatory)
 
@@ -92,5 +92,8 @@ The repository has scaffolding only: git hooks (gir), OpenSpec, editor and line-
 
 ## Open Questions
 
-- Build backend: `uv_build` vs hatchling. Either works; decide during implementation.
-- Exact pyright strictness for ui/platform, tuned once real code exists.
+None remaining. Resolved during implementation:
+
+- Build backend: `uv_build`. It handles the src layout and the console script without extra config, so hatchling was not needed.
+- pyright strictness for ui/platform: strict, same as core. The first ui, platform and app code passed strict mode with zero errors, including the PySide6 code, so a looser mode bought nothing. A module that cannot meet strict mode later can be relaxed on its own.
+- Development Python: 3.14, pinned in `.python-version` so uv does not pick another installed interpreter.
