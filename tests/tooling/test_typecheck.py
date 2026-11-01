@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+import tomllib
 
 import pytest
 
@@ -19,3 +20,12 @@ def test_pyright_clean() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_production_code_is_strict_and_tests_are_basic() -> None:
+    pyright = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text())["tool"][
+        "pyright"
+    ]
+    assert pyright["strict"] == ["src"]
+    assert pyright["typeCheckingMode"] == "basic"
+    assert "tests" in pyright["include"]

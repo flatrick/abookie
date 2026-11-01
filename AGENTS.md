@@ -34,7 +34,7 @@ Python >= 3.12, managed with [uv](https://docs.astral.sh/uv/). libmpv is a syste
 | `uv run pytest -m unit` | Run one marker only (`--no-cov` skips the coverage floor for partial runs). |
 | `uv run ruff check --fix .` | Lint and apply safe fixes. |
 | `uv run ruff format .` | Format the code. |
-| `uv run pyright` | Type-check (strict for `src/abookie/core`, basic elsewhere). |
+| `uv run pyright` | Type-check (strict for all of `src`, basic for `tests`). |
 | `uv run lint-imports` | Check the layer contracts (also run by `tests/architecture/test_layers.py`). |
 | `uv run abookie` | Start the application. |
 | `tests/fixtures/make_fixtures.sh` | Regenerate the committed audio fixtures (needs ffmpeg). |

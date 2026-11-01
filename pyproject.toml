@@ -37,7 +37,7 @@ select = ["E", "W", "F", "I", "UP", "B", "SIM"]
 pythonVersion = "3.12"
 include = ["src", "tests"]
 typeCheckingMode = "basic"
-strict = ["src/abookie/core"]
+strict = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
