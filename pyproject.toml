@@ -1,0 +1,93 @@
+[project]
+name = "abookie"
+version = "0.1.0"
+description = "An audiobook player"
+readme = "README.md"
+license = "Unlicense"
+requires-python = ">=3.12"
+dependencies = [
+  "mutagen>=1.48.1",
+  "platformdirs>=4.14.3",
+  "pyside6>=6.12.0",
+  "python-mpv>=1.0.8",
+]
+
+[project.scripts]
+abookie = "abookie.app.main:run"
+
+[dependency-groups]
+dev = [
+  "import-linter>=2.15",
+  "pyright>=1.1.414",
+  "pytest",
+  "pytest-cov>=7.1.0",
+  "pytest-qt>=4.5.0",
+  "ruff>=0.17.3",
+]
+
+[tool.ruff]
+target-version = "py312"
+indent-width = 4
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+include = ["src", "tests"]
+typeCheckingMode = "basic"
+strict = ["src/abookie/core"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers", "--cov=abookie", "--cov-report=term-missing"]
+markers = [
+  "unit: fast, isolated tests of core logic using fakes",
+  "integration: tests against real dependencies (libmpv, Qt event loop, files)",
+  "ui: pytest-qt tests of views and view-models (offscreen)",
+  "tooling: tests of project tooling (ruff, pyright, git hooks)",
+]
+
+[tool.coverage.run]
+branch = true
+omit = [
+  # Composition root: wiring only, exercised by running the application.
+  "src/abookie/app/*",
+  "src/abookie/__main__.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
+
+[tool.importlinter]
+root_package = "abookie"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core is independent of ui, platform, app and UI/engine/tag/storage/OS libraries"
+type = "forbidden"
+source_modules = ["abookie.core"]
+forbidden_modules = [
+  "abookie.ui",
+  "abookie.platform",
+  "abookie.app",
+  "PySide6",
+  "mpv",
+  "mutagen",
+  "sqlite3",
+  "platformdirs",
+  "time",
+]
+
+[[tool.importlinter.contracts]]
+name = "ui does not import platform adapters"
+type = "forbidden"
+source_modules = ["abookie.ui"]
+forbidden_modules = ["abookie.platform"]
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14"]
+build-backend = "uv_build"
