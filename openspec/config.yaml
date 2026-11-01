@@ -1,0 +1,51 @@
+schema: spec-driven
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
+
+context: |
+  Linux is the MVP target platform; designs must keep macOS and Windows support possible
+  by isolating OS-specific behavior, but must not spend effort on them before the Linux MVP.
+  The project's own code is released under The Unlicense. GPL/LGPL dependencies are acceptable.
+  Third-party code is never vendored or redistributed: dependencies are declared in
+  pyproject.toml, and native libraries (e.g. libmpv) are documented system dependencies.
+
+rules:
+  specs:
+    - Place every capability under one of the top-level areas core/, ui/ or platform/
+      (e.g. specs/core/library/identity/spec.md)
+    - core/ is pure logic and ports; ui/ is views and view-models; platform/ is adapters and OS integration
+    - An area's own spec.md (e.g. specs/core/spec.md) holds only cross-cutting requirements
+      that apply to every capability beneath it
+  tasks:
+    - Every implementation task follows Red-Green-Refactor - write the failing test first, then
+      the minimal implementation that passes it, then refactor with tests green
+    - Each task names the failing test(s) it starts from
