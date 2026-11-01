@@ -1,5 +1,8 @@
 #!/bin/sh
 # Installed by `gir init`. Commit this file; see `gir explain hooks`.
+# Project checks (lint, format, types, tests); see .githooks/check-all.sh.
+# stdin is kept for gir, which reads the pushed refs from it.
+"$(git rev-parse --show-toplevel)/.githooks/check-all.sh" </dev/null || exit 1
 if command -v gir >/dev/null 2>&1; then
 	exec gir hook pre-push "$@"
 fi

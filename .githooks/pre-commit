@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# pre-commit: auto-format and lint-fix the staged Python files with ruff.
+#
+# Only staged *.py files are touched. If ruff changes any of them, the commit
+# is aborted and the changed files are listed, so you can review and re-stage
+# them. A partially staged file is therefore never rewritten into a commit
+# behind your back.
+#
+# Skipped with a warning when uv is not installed.
+set -euo pipefail
+
+if ! command -v uv >/dev/null 2>&1; then
+    echo "pre-commit: uv not installed, formatting skipped" >&2
+    exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+
+mapfile -d '' files < <(git diff --cached --name-only --diff-filter=ACMR -z -- '*.py')
+if [ "${#files[@]}" -eq 0 ]; then
+    exit 0
+fi
+
+mapfile -t before < <(git hash-object -- "${files[@]}")
+uv run --frozen ruff check --fix --exit-zero --quiet -- "${files[@]}"
+uv run --frozen ruff format --quiet -- "${files[@]}"
+mapfile -t after < <(git hash-object -- "${files[@]}")
+
+changed=()
+for i in "${!files[@]}"; do
+    if [ "${before[$i]}" != "${after[$i]}" ]; then
+        changed+=("${files[$i]}")
+    fi
+done
+
+if [ "${#changed[@]}" -gt 0 ]; then
+    {
+        echo "pre-commit: ruff reformatted or fixed these files; commit aborted."
+        echo "Review the changes, re-stage them and commit again:"
+        printf '  %s\n' "${changed[@]}"
+    } >&2
+    exit 1
+fi
