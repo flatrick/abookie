@@ -81,6 +81,19 @@ Commit messages are checked by [gir](https://github.com/flatrick/git-it-right) a
 - To check a range of commits: `gir lint --range main..HEAD`. When a commit is rejected, `gir explain <rule>` explains the rule it broke.
 - Optional changelog/version: `git-cliff -o CHANGELOG.md` and `git-cliff --bumped-version` (configured in `cliff.toml`).
 
+## Branches and merging
+
+History on `main` is linear: merges are fast-forward only, so rebasing is routine.
+
+1. **Review the branch before merging.** Read every commit on it (`git log --reverse main..change/<change-name>`). If the commits do not tell a clean story, rebuild them: `git reset --soft $(git merge-base main HEAD)` and recommit the work as proper Conventional Commits (see above). Otherwise tidy them with `git rebase -i main`.
+2. **Rebase onto the current `main`:** `git rebase main`, then rerun the checks (`.githooks/check-all.sh`).
+3. **Fast-forward merge only:** from the main clone, `git merge --ff-only change/<change-name>`, then `git push`. Never create merge commits or squash merges.
+4. **Clean up:** `git worktree remove .worktrees/<change-name>` and `git branch -d change/<change-name>`.
+
+Set this once per clone so a plain `git merge` can only fast-forward: `git config merge.ff only` (and `git config pull.ff only` unless it is set globally).
+
+GitHub enforces the same rules. The `main` ruleset requires linear history and blocks force pushes and deletion. Merge commits and squash merging are disabled. GitHub has no fast-forward button: its "Rebase and merge" recreates the commits with new SHAs. Merge locally with `--ff-only` and push instead.
+
 ## Formatting
 
 `.editorconfig` and `.gitattributes` enforce UTF-8 and LF line endings (CRLF only for `*.cmd`, `*.bat` and `*.sln`). Indentation is 4 spaces by default, 2 for YAML/JSON/TOML, and tabs for Makefiles.
