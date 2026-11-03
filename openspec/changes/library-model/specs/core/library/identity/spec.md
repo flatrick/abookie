@@ -2,71 +2,101 @@
 
 ## Purpose
 
-Defines how a book is recognized as the same book across scans, so that listening state stays attached to it when its files are moved or renamed.
+Defines how the system finds that a book is the same book after a scan, a move to a different root, or a relocation. Thus the listening state stays with the book when its files move or get a new name. It also defines how the system merges two known books.
 
 ## ADDED Requirements
 
-### Requirement: Books carry identity claims
-Each book SHALL have a set of identity claims, each with a kind and a value, and the set of claim kinds SHALL be extensible without changing existing claims.
+### Requirement: Books have identity claims
+Each book MUST have a set of identity claims. Each claim has a kind and a value. It MUST be possible to add new claim kinds without a change to the existing claims.
 
-#### Scenario: Claims recorded for a new book
-- **GIVEN** a root `/data/books` and a new book at `/data/books/Author A/Book B`
-- **WHEN** the book is first discovered
-- **THEN** it has an `abs_path` claim `/data/books/Author A/Book B`, a `rel_path` claim `Author A/Book B`, and a `tags` claim when author and title tags are present
+#### Scenario: System records claims for a new book
+- **GIVEN** a root with the path `/data/books`, and a new book at `Author A/Book B` in it
+- **WHEN** the system finds the book for the first time
+- **THEN** the book has an `abs_path` claim `/data/books/Author A/Book B` and a `rel_path` claim `Author A/Book B`. It also has a `tags` claim if it has an author tag and a title tag.
 
-#### Scenario: Unknown future claim kind
-- **GIVEN** a stored claim of a kind the current version does not use
-- **WHEN** identity matching runs
-- **THEN** the claim is kept unchanged and ignored by matching
+#### Scenario: Claim of an unknown kind
+- **GIVEN** a claim of a kind that the current version does not use
+- **WHEN** the system compares identities
+- **THEN** the system keeps the claim without a change and does not use it in the comparison
 
 ### Requirement: MVP claim kinds
-In the MVP the system SHALL create and match only the claim kinds `abs_path` (fully resolved absolute path), `rel_path` (path relative to its root) and `tags` (normalized author and title).
+In the MVP, the system MUST make and compare only the claim kinds `abs_path`, `rel_path` and `tags`.
+
+- `abs_path` is the root path and the path of the book in the root together.
+- `rel_path` is the path of the book in the root.
+- `tags` is the author and the title in a standard form.
 
 #### Scenario: Book without author or title tags
-- **WHEN** a book whose tags lack author or title is discovered
-- **THEN** it receives `abs_path` and `rel_path` claims and no `tags` claim
+- **WHEN** the system finds a book with no author tag or no album tag
+- **THEN** the book gets an `abs_path` claim and a `rel_path` claim, and no `tags` claim
 
-### Requirement: Claims are matched in a fixed order
-When a scan finds a book, the system SHALL match it against known books by `abs_path` first, then `rel_path`, then `tags`, and the first kind that produces a match SHALL decide the outcome.
+### Requirement: System compares claims in a fixed sequence
+When a scan finds a book, the system MUST compare it with the known books in this sequence: `abs_path`, `rel_path`, `tags`. The first kind that agrees MUST give the result.
 
 #### Scenario: Same location
-- **WHEN** a scan finds a book whose resolved path equals a known book's `abs_path` claim
+- **WHEN** a scan finds a book with an absolute path that is the same as the `abs_path` claim of a known book
 - **THEN** it is the same book
 
-#### Scenario: Root relocated
-- **GIVEN** a known book with claim `rel_path` = `Author A/Book B` under root `/mnt/nas/books`
-- **WHEN** the root is now mounted at `/media/nas/books` and the scan finds `Author A/Book B` with no `abs_path` match
-- **THEN** it is the same book and its `abs_path` claim is updated
+### Requirement: A rel_path match in the same root is always correct
+When a found book has the same `rel_path` as a known book in the same root, the system MUST link the two books. It changes the `abs_path` claim. It does no other checks.
 
-#### Scenario: Book moved between roots
-- **GIVEN** a known book with `rel_path` `Author A/Book B` in root 1 whose old location no longer exists
+#### Scenario: User changes the root path
+- **GIVEN** a known book with the claim `rel_path` = `Author A/Book B`, in a root whose path changed from `/mnt/nas/books` to `/media/nas/books`
+- **WHEN** the rescan finds `Author A/Book B`
+- **THEN** it is the same book, and its `abs_path` claim changes to `/media/nas/books/Author A/Book B`
+
+### Requirement: Links between roots need the old location to be gone
+When a claim agrees with a known book in a different root, the system MUST link the books only if the old location is gone. This applies to `rel_path` and `tags` claims.
+
+The old location is gone in two conditions. The first is when the user said that its root is gone. The second is when its root is reachable and the old path does not exist.
+
+#### Scenario: User moves a book to a different reachable root
+- **GIVEN** a known book with the `rel_path` `Author A/Book B` in the reachable root 1, and its folder does not exist
 - **WHEN** a scan of root 2 finds `Author A/Book B`
-- **THEN** it is the same book and its path claims are updated
+- **THEN** it is the same book, and the system changes its path claims
 
-### Requirement: Path matches link only books whose old location is gone
-A `rel_path` or `tags` match SHALL only link to a known book whose previously claimed absolute path no longer exists; otherwise the found book is treated as a separate book.
+#### Scenario: Two copies exist
+- **GIVEN** a known book at `/data/a/Author A/Book B` that exists
+- **WHEN** a scan of a different root finds `Author A/Book B`
+- **THEN** the found book is a new and different book
 
-#### Scenario: Two copies present
-- **GIVEN** a known book at `/data/a/Author A/Book B` that still exists
-- **WHEN** a scan of another root finds `Author A/Book B`
-- **THEN** the found book is a new, separate book
+#### Scenario: Old root offline
+- **GIVEN** a known book `Author A/Book B` in a root that is unreachable, and the user did not say that the root is gone
+- **WHEN** a scan of a different root finds `Author A/Book B`
+- **THEN** the found book is a new and different book, and the known book stays unavailable
 
-### Requirement: Tag matches require user confirmation
-A match made only by the `tags` claim SHALL NOT be linked automatically; the system SHALL ask the user to confirm, showing both books' paths, total durations and saved positions.
+### Requirement: Tag matches need the agreement of the user
+The system MUST NOT link or merge two books automatically when only the `tags` claim agrees. The system MUST ask the user, and MUST show the paths, total durations and saved positions of the two books.
 
-#### Scenario: User confirms a tag match
-- **GIVEN** a known book with `tags` claim author "Jane Doe" and title "Some Book" whose old path is gone
-- **WHEN** a scan finds a renamed folder with the same tags and the user confirms
-- **THEN** the found book is linked to the known book and keeps its listening state
+#### Scenario: User accepts a tag match
+- **GIVEN** a known book with the `tags` claim author "Jane Doe" and title "Some Book", and its old location is gone
+- **WHEN** a scan finds a folder with a new name and the same tags, and the user accepts
+- **THEN** the system links the found book to the known book, and the book keeps its listening state
 
-#### Scenario: User rejects a tag match
-- **WHEN** the user rejects a proposed tag match
-- **THEN** the found book is added as a new book and the known book is unchanged
+#### Scenario: User refuses a tag match
+- **WHEN** the user does not accept a tag match
+- **THEN** the found book stays a different book, and the known book does not change
 
-### Requirement: Missing books are kept
-A known book that no scan matches SHALL be kept and shown as missing, together with its listening state, and SHALL NOT be deleted automatically.
+### Requirement: Merge of two known books
+When the system links two books that it knows already, it MUST merge them into one book that has the claims of the two books. It MUST keep the listening state of the two books as the listening-state conflict rules tell.
 
-#### Scenario: Book deleted from disk
-- **GIVEN** a known book with a saved position
-- **WHEN** its files are deleted and its root is rescanned
-- **THEN** the book is shown as missing with its saved position, until the user removes it
+#### Scenario: User accepts a tag match for a book that the user played
+- **GIVEN** a tag match between the known book A and the found book B that waits for the user, and the user played B
+- **WHEN** the user accepts the match
+- **THEN** A and B become one book with the claims of the two books. The system keeps the two listening states as a conflict.
+
+### Requirement: A root that is gone causes merges by rel_path
+When the user says that a root is gone, the system MUST merge each of its books with a book that has the same `rel_path`. It does this automatically. The system MUST ask the user about matches of only the `tags` claim.
+
+#### Scenario: Copy of the book in a different root
+- **GIVEN** the book A `Author A/Book B` in an unreachable root, and the book B with the same `rel_path` in a different root. The system made book B when the first root was offline.
+- **WHEN** the user says that the unreachable root is gone
+- **THEN** the system merges A and B into one book, and does not ask the user
+
+### Requirement: System keeps missing books
+The system MUST keep a known book that no scan finds, and MUST show it as missing with its listening state. The system MUST NOT delete it automatically.
+
+#### Scenario: User deletes a book from the disk
+- **GIVEN** a known book with a saved position in a reachable root
+- **WHEN** its files are deleted and the system scans its root again
+- **THEN** the system shows the book as missing with its saved position, until the user removes it
