@@ -51,6 +51,19 @@ Git hooks (enabled per clone with `gir init`; each skips with a warning when its
 - **TDD is mandatory.** Use Red-Green-Refactor for every change: write a failing test first, then the minimal code that passes it, then refactor with tests green. Do not write implementation code without a failing test that requires it.
 - **Never vendor or redistribute third-party code.** Declare dependencies in `pyproject.toml`. Native libraries (libmpv) are documented system dependencies. GPL/LGPL dependencies are acceptable.
 
+## Writing (ASD-STE100)
+
+All text in this repository MUST follow [ASD-STE100 Simplified Technical English](https://www.asd-ste100.org/). This applies to documentation, OpenSpec artifacts, code comments, docstrings, commit messages, and text that the user sees in the application.
+
+The main rules are:
+
+- Use only approved words, and use each word with its approved meaning only. You can also use technical names and technical verbs (for example, `scan`, `rescan`, `merge`, `libmpv`).
+- Write short sentences: 20 words or fewer for procedures, 25 words or fewer for descriptions.
+- Write one instruction in each sentence. Use the imperative form for instructions.
+- Use the active voice.
+- Use the same term for the same thing every time. Do not use synonyms.
+- Write paragraphs of 6 sentences or fewer.
+
 ## Spec-driven workflow (OpenSpec)
 
 Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) using the `spec-driven` schema (`openspec/config.yaml`).
