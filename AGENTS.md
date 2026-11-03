@@ -30,6 +30,7 @@ Python >= 3.12, managed with [uv](https://docs.astral.sh/uv/). libmpv is a syste
 
 | Command | What it does |
 |---------|--------------|
+| `./dev-setup.sh` | Apply the expected local git settings (hooks, fast-forward-only merge and pull, rebase options). Run once per clone. |
 | `uv sync` | Create/update `.venv` from `uv.lock`, including the `dev` tools. |
 | `uv run pytest` | Run all tests (markers `unit`, `integration`, `ui`, `tooling`) with coverage; fails below 80%. |
 | `uv run pytest -m unit` | Run one marker only (`--no-cov` skips the coverage floor for partial runs). |
@@ -40,7 +41,7 @@ Python >= 3.12, managed with [uv](https://docs.astral.sh/uv/). libmpv is a syste
 | `uv run abookie` | Start the application. |
 | `tests/fixtures/make_fixtures.sh` | Regenerate the committed audio fixtures (needs ffmpeg). |
 
-Git hooks (enabled per clone with `gir init`; each skips with a warning when its tool is missing):
+Git hooks (enabled per clone with `./dev-setup.sh` or `gir init`; each skips with a warning when its tool is missing):
 
 - `pre-commit`: runs `ruff check --fix` and `ruff format` on staged `*.py` files. If anything changed, the commit is aborted and the files to re-stage are listed.
 - `commit-msg`: gir checks the message against Conventional Commits.
@@ -90,7 +91,7 @@ Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) usin
 Commit messages are checked by [gir](https://github.com/flatrick/git-it-right) against Conventional Commits: `<type>[(scope)][!]: <description>`.
 
 - Allowed types (from `.girconfig`): `feat fix docs style refactor perf test build ci chore revert`. The aliases `feature` and `bugfix` map to `feat` and `fix`. The subject can be at most 72 characters.
-- Hooks live in `.githooks/` (commit-msg, pre-push). Running `gir init` once per clone sets `core.hooksPath` to point at them. If gir is not installed, the hooks skip the check instead of failing.
+- Hooks live in `.githooks/` (commit-msg, pre-push). Running `./dev-setup.sh` or `gir init` once per clone sets `core.hooksPath` to point at them. If gir is not installed, the hooks skip the check instead of failing.
 - To check a range of commits: `gir lint --range main..HEAD`. When a commit is rejected, `gir explain <rule>` explains the rule it broke.
 - Optional changelog/version: `git-cliff -o CHANGELOG.md` and `git-cliff --bumped-version` (configured in `cliff.toml`).
 
@@ -103,7 +104,7 @@ History on `main` is linear: merges are fast-forward only, so rebasing is routin
 3. **Fast-forward merge only:** from the main clone, `git merge --ff-only change/<change-name>`, then `git push`. Never create merge commits or squash merges.
 4. **Clean up:** `git worktree remove .worktrees/<change-name>` and `git branch -d change/<change-name>`.
 
-Set this once per clone so a plain `git merge` can only fast-forward: `git config merge.ff only` (and `git config pull.ff only` unless it is set globally).
+Run `./dev-setup.sh` once per clone. It sets `merge.ff only` and `pull.ff only`, so a plain `git merge` or `git pull` can only fast-forward.
 
 GitHub enforces the same rules. The `main` ruleset requires linear history and blocks force pushes and deletion. Merge commits and squash merging are disabled. GitHub has no fast-forward button: its "Rebase and merge" recreates the commits with new SHAs. Merge locally with `--ff-only` and push instead.
 

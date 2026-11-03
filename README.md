@@ -25,12 +25,12 @@ You need [uv](https://docs.astral.sh/uv/), libmpv (above), and optionally [gir](
 ```sh
 git clone https://github.com/flatrick/abookie.git
 cd abookie
+./dev-setup.sh
 uv sync
-gir init
 uv run pytest
 ```
 
-`uv sync` creates the virtual environment and installs all dependencies, including the development tools. `gir init` turns on the git hooks in `.githooks/` (commit-message check, auto-formatting on commit, full checks on push).
+`./dev-setup.sh` applies the expected local git settings. It turns on the git hooks in `.githooks/` (commit-message check, auto-formatting on commit, full checks on push). It also sets merges and pulls to fast-forward only. Run it again at any time; it is safe. `uv sync` creates the virtual environment and installs all dependencies, including the development tools.
 
 Run the application with `uv run abookie`.
 
