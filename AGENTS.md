@@ -65,6 +65,8 @@ The main rules are:
 - Use the same term for the same thing every time. Do not use synonyms.
 - Write paragraphs of 6 sentences or fewer.
 
+The project dictionary is in [`STE-DICTIONARY.md`](STE-DICTIONARY.md). It gives the technical names and technical verbs of this project, with their meanings. When the dictionary gives a word, you MUST use that word with that meaning. When we decide on a new word, add it to the dictionary first.
+
 ## Spec-driven workflow (OpenSpec)
 
 Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) using the `spec-driven` schema (`openspec/config.yaml`).
@@ -90,6 +92,11 @@ Changes are planned with [OpenSpec](https://github.com/Fission-AI/OpenSpec) usin
 
 Commit messages are checked by [gir](https://github.com/flatrick/git-it-right) against Conventional Commits: `<type>[(scope)][!]: <description>`.
 
+- **Stage hunks, not files.** Stage only the hunks that belong to the commit. Do not use `git add <file>`, `git add .`, `git add -A` or `git commit -a`.
+  - Use `git add -p` to select the hunks.
+  - If you cannot use an interactive command, write the selected hunks to a patch file. Then stage it with `git apply --cached <patch>`.
+  - For a new file, first run `git add -N <file>`. Then stage its hunks.
+  - Before you commit, examine the staged hunks with `git diff --cached`.
 - Allowed types (from `.girconfig`): `feat fix docs style refactor perf test build ci chore revert`. The aliases `feature` and `bugfix` map to `feat` and `fix`. The subject can be at most 72 characters.
 - Hooks live in `.githooks/` (commit-msg, pre-push). Running `./dev-setup.sh` or `gir init` once per clone sets `core.hooksPath` to point at them. If gir is not installed, the hooks skip the check instead of failing.
 - To check a range of commits: `gir lint --range main..HEAD`. When a commit is rejected, `gir explain <rule>` explains the rule it broke.
